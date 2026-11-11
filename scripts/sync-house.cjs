@@ -195,6 +195,8 @@ async function sync(id,slug,options){
   try{
     const tree=path.join(temp,'prepared'),next=prepareTree(tree,source,{includeSync:false});
     for(const file of prior.managed){safePath(file.path);fs.unlinkSync(path.join(root,file.path));}
+    const oldDirectories=new Set();for(const file of prior.managed){const parts=file.path.split('/');for(let i=1;i<parts.length;i++)oldDirectories.add(parts.slice(0,i).join('/'));}
+    for(const directory of [...oldDirectories].sort((a,b)=>b.split('/').length-a.split('/').length)){safePath(directory);try{fs.rmdirSync(path.join(root,directory));}catch(error){if(error.code!=='ENOENT')throw error;}}
     // Only verified source/tooling and the managed list change. The updater
     // and workflow are maintained separately and cannot be replaced by bots.
     for(const file of next.managed)writeFile(root,file.path,fs.readFileSync(path.join(tree,file.path)),file.mode);
