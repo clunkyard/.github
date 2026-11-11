@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask the Clunkyard community
+    url: https://github.com/clunkyard/game-kit/discussions
+    about: Get help with setup, languages, tactics and local matches.
+  - name: Read the SDK and local development guides
+    url: https://clunkyard.com/sdk
+    about: Find the robot API, language adapters, private Git and local trials.
+  - name: Report a security vulnerability privately
+    url: https://github.com/clunkyard/.github/security/advisories/new
+    about: Send vulnerabilities and sensitive reproductions to the maintainers privately.

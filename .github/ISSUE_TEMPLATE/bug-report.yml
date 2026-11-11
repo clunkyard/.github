@@ -1,0 +1,45 @@
+name: Report a bug
+description: Report a reproducible Clunkyard, SDK or local-tooling defect.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use community discussions for setup questions. Keep keys, account tokens and private robot source out of this public report. Report security vulnerabilities through the private security link.
+  - type: input
+    id: versions
+    attributes:
+      label: Language and package versions
+      description: Name the language profile and affected package or SDK version, if known.
+      placeholder: JavaScript, @clunkyard/sdk 2.0.0
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Operating system and toolchain
+      description: Include your OS, Node version and relevant compiler or interpreter.
+      placeholder: Windows 11, Node 24, TypeScript 6
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: What happened instead? Include relevant error text with secrets removed.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Smallest reproduction
+      description: Give repeatable steps, a minimal public example or a public replay. For match problems, include the mode, ruleset and seed when available.
+    validations:
+      required: true
