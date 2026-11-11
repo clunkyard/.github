@@ -145,10 +145,10 @@ jobs:
           node "$RUNNER_TEMP/sync-house.cjs" --sync ${bot.id} --slug ${bot.slug}
       - name: Commit verified changes
         run: |
-          if git diff --quiet; then exit 0; fi
+          git add --all
+          if git diff --cached --quiet; then exit 0; fi
           git config user.name 'clunkyard-house[bot]'
           git config user.email 'house@users.noreply.github.com'
-          git add --all
           git commit -m 'Refresh published House robot source'
           git push
 `;}
