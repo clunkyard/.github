@@ -1,7 +1,7 @@
 # Published House source updater
 
 Official `clunkyard/house-<slug>` template repositories share `sync-house.cjs`.
-Their hourly workflows download a reviewed immutable commit and verify the
+Their staggered 15-minute workflows download a reviewed immutable commit and verify the
 script's SHA-256 before running it. There are no organization secrets or broad
 tokens; each workflow writes only its repository with its own `GITHUB_TOKEN`.
 
@@ -28,7 +28,7 @@ node sync-house.cjs --sync PUBLISHED_BOT_UUID --slug EXACT_SLUG
 ```
 
 This command requires `GITHUB_REPOSITORY=clunkyard/house-EXACT_SLUG`, a clean
-Git checkout and intact prior managed-file metadata. The hourly workflow sets
+Git checkout and intact prior managed-file metadata. The scheduled workflow sets
 the repository identity through GitHub Actions. It has no application or
 private-workspace access.
 
@@ -39,7 +39,9 @@ node --test test/sync-house.test.cjs
 ```
 
 Review and test updates here, then pin a new signed commit and matching script
-SHA-256 in official templates. Existing pins do not update automatically.
+SHA-256 in official templates. Existing pins do not update automatically. Generated guides and tooling refresh even when the public robot revision is unchanged; an already current tree remains untouched.
+
+After changing a schedule, verify a real `schedule` event succeeds. Manual dispatch proves the updater, not scheduler delivery. If an enabled schedule stops delivering while manual dispatch works, GitHub recommends committing a cron change; see [workflow troubleshooting](https://docs.github.com/en/actions/how-tos/troubleshoot-workflows#scheduled-workflow-stopped-running).
 
 Questions belong in [game-kit Discussions](https://github.com/clunkyard/game-kit/discussions).
 Report security problems through [private intake](../SECURITY.md).

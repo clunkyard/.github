@@ -57,7 +57,7 @@ async function fetchSource(row,options){
   if(!sameSource(before,after))throw Error(`House source changed during download: ${slug}`);
   return{bot:{...before,slug},snapshot};
 }
-const makefile='CLUNKYARD ?= npx --yes @clunkyard/cli@2\n\n.PHONY: all setup doctor match replay clean\nall:\n\t$(CLUNKYARD) build\nsetup:\n\t$(CLUNKYARD) setup\ndoctor:\n\t$(CLUNKYARD) doctor\nmatch:\n\t$(CLUNKYARD) match\nreplay:\n\t$(CLUNKYARD) replay\nclean:\n\t$(CLUNKYARD) clean\n';
+const makefile='CLUNKYARD ?= npx @clunkyard/cli\n\n.PHONY: all setup doctor match replay clean\nall:\n\t$(CLUNKYARD) build\nsetup:\n\t$(CLUNKYARD) setup\ndoctor:\n\t$(CLUNKYARD) doctor\nmatch:\n\t$(CLUNKYARD) match\nreplay:\n\t$(CLUNKYARD) replay\nclean:\n\t$(CLUNKYARD) clean\n';
 const license=`MIT License
 
 Copyright (c) 2026 Clunkyard contributors
@@ -93,10 +93,10 @@ The shared CLI downloads only the engine and this language's SDK.
 \`\`\`sh
 git clone https://github.com/clunkyard/house-${bot.slug}.git
 cd house-${bot.slug}
-npx --yes @clunkyard/cli@2 doctor
-npx --yes @clunkyard/cli@2 build
-npx --yes @clunkyard/cli@2 match 42 2d classic
-npx --yes @clunkyard/cli@2 replay
+npx @clunkyard/cli doctor
+npx @clunkyard/cli build
+npx @clunkyard/cli match 42 2d classic
+npx @clunkyard/cli replay
 \`\`\`
 
 With Make, use \`make doctor\`, \`make\`, \`make match\` and \`make replay\`.
@@ -114,17 +114,17 @@ Use this template to create your own GitHub repository, then connect it in
 Run local trials before hosted practice and tournament entry.
 Builds execute source as your user, so review changes you pull.
 
-This official template follows the published House robot. Its hourly sync is
+This official template follows the published House robot. Its scheduled sync is
 restricted to \`clunkyard/house-${bot.slug}\`; it never runs in a player's copy.
 \`.clunkyard-source.json\` records the source bot, revision and original manifest.
 Robot source bytes are preserved; \`bot.json\` uses the CLI's canonical language slug.
 Tooling, this guide and the MIT licence are template additions.
 `;
 }
-function workflow(bot,updaterRef){const updaterHash=sha(fs.readFileSync(__filename));return `name: Refresh published House source
+function workflow(bot,updaterRef){const updaterHash=sha(fs.readFileSync(__filename)),offset=parseInt(sha(bot.slug).slice(0,2),16)%15;return `name: Refresh published House source
 on:
   schedule:
-    - cron: '37 * * * *'
+    - cron: '${[0,15,30,45].map(minute=>minute+offset).join(',')} * * * *'
   workflow_dispatch:
 permissions: {}
 concurrency:
@@ -190,10 +190,13 @@ async function sync(id,slug,options){
   // bytes and executability here; the public export records the full modes.
   const gitFiles=files=>files.map(({path,sha256,mode})=>({path,sha256,executable:Boolean(mode&0o111)}));
   if(JSON.stringify(gitFiles(current))!==JSON.stringify(gitFiles(prior.managed)))throw Error('Managed House files were edited; review before refreshing.');
-  const source=await fetchSource({id,slug},options);if(JSON.stringify(identity(source.bot))===JSON.stringify(prior.source))return;
+  const source=await fetchSource({id,slug},options);
   const temp=fs.mkdtempSync(path.join(os.tmpdir(),'house-template-sync-'));
   try{
     const tree=path.join(temp,'prepared'),next=prepareTree(tree,source,{includeSync:false});
+    // Source identity alone does not describe generated guides and tooling.
+    // Refresh those too, while leaving an already current checkout untouched.
+    if(JSON.stringify(next.managed)===JSON.stringify(prior.managed)&&JSON.stringify(identity(source.bot))===JSON.stringify(prior.source))return;
     for(const file of prior.managed){safePath(file.path);fs.unlinkSync(path.join(root,file.path));}
     const oldDirectories=new Set();for(const file of prior.managed){const parts=file.path.split('/');for(let i=1;i<parts.length;i++)oldDirectories.add(parts.slice(0,i).join('/'));}
     for(const directory of [...oldDirectories].sort((a,b)=>b.split('/').length-a.split('/').length)){safePath(directory);try{fs.rmdirSync(path.join(root,directory));}catch(error){if(error.code!=='ENOENT')throw error;}}
@@ -233,4 +236,4 @@ async function main(argv=process.argv.slice(2)){
   if(argv.includes('--apply'))await publish(output,rows,updaterRef);else console.log(`Dry run only. Review ${path.join(output,'templates.json')} and generated workflows before publishing.`);
 }
 if(require.main===module)main().catch(error=>{console.error(error.message);process.exitCode=1;});
-module.exports={safePath,decodeBundle,fetchSource,prepareTree,verifyTree,sync,main};
+module.exports={safePath,decodeBundle,fetchSource,prepareTree,verifyTree,workflow,sync,main};

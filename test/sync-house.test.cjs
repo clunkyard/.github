@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path'),zlib=require('node:zlib'),crypto=require('node:crypto');
 const {execFileSync}=require('node:child_process');
-const {decodeBundle,fetchSource,prepareTree,verifyTree,sync,main}=require('../scripts/sync-house.cjs');
+const {decodeBundle,fetchSource,prepareTree,verifyTree,workflow,sync,main}=require('../scripts/sync-house.cjs');
 const hash=data=>crypto.createHash('sha256').update(data).digest('hex');
 const bot={id:'11111111-1111-4111-8111-111111111111',slug:'specimen',name:'Specimen',language:'vane',houseBot:true,visibility:'published',sourcePublished:true,active_revision_id:'22222222-2222-4222-8222-222222222222',manifest_hash:'a'.repeat(64)};
 function fixture({revision=bot.active_revision_id,source='drive 0.7',extra=true,nested=false}={}){
@@ -42,3 +42,20 @@ test('shared updater refuses player copies and edited source, then refreshes onl
   }finally{process.chdir(previous);if(env===undefined)delete process.env.GITHUB_REPOSITORY;else process.env.GITHUB_REPOSITORY=env;fs.rmSync(temp,{recursive:true,force:true});}
 });
 test('public publishing requires a reviewed immutable updater pin',async()=>{await assert.rejects(()=>main(['--apply','--out','unused']),/reviewed.*SHA/i);});
+test('same-source refresh updates verified generated tooling, then becomes a clean no-op',async()=>{
+  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'house-tooling-')),previous=process.cwd(),env=process.env.GITHUB_REPOSITORY;
+  try{
+    const value=fixture(),root=path.join(temp,'repo');prepareTree(root,{bot:value.profile,snapshot:value.snapshot},{updaterRef:'b'.repeat(40)});process.chdir(root);
+    const git=args=>execFileSync('git',args,{cwd:root,stdio:'pipe',encoding:'utf8'}),commit=()=>{git(['add','--all']);git(['-c','user.name=Fixture','-c','user.email=fixture@example.test','-c','commit.gpgsign=false','commit','-m','Fixture']);};
+    git(['init','--initial-branch=main']);
+    // Model an official earlier exporter, including its exact managed hash.
+    fs.writeFileSync('README.md','Earlier official guide\n');const prior=JSON.parse(fs.readFileSync('.github/house-template.json'));prior.managed.find(file=>file.path==='README.md').sha256=hash(fs.readFileSync('README.md'));fs.writeFileSync('.github/house-template.json',JSON.stringify(prior));commit();
+    process.env.GITHUB_REPOSITORY='clunkyard/house-specimen';const before=fs.readFileSync('robot.vane');await sync(bot.id,bot.slug,{fetchImpl:fetchFor(value)});
+    assert.deepEqual(fs.readFileSync('robot.vane'),before);assert.match(fs.readFileSync('README.md','utf8'),/npx @clunkyard\/cli doctor/);assert.doesNotMatch(fs.readFileSync('Makefile','utf8'),/@clunkyard\/cli@/);assert.deepEqual(JSON.parse(fs.readFileSync('.clunkyard-source.json')),prior.source);commit();
+    await sync(bot.id,bot.slug,{fetchImpl:fetchFor(value)});assert.equal(git(['status','--porcelain']).trim(),'');
+    const next=fixture({revision:'33333333-3333-4333-8333-333333333333'});await sync(bot.id,bot.slug,{fetchImpl:fetchFor(next)});assert.deepEqual(fs.readFileSync('robot.vane'),before);assert.equal(JSON.parse(fs.readFileSync('.clunkyard-source.json')).revisionId,next.profile.active_revision_id);
+  }finally{process.chdir(previous);if(env===undefined)delete process.env.GITHUB_REPOSITORY;else process.env.GITHUB_REPOSITORY=env;fs.rmSync(temp,{recursive:true,force:true});}
+});
+test('scheduled publication polls throughout the hour with deterministic staggering and original-repository authority',()=>{
+  const value=workflow(bot,'b'.repeat(40)),minutes=value.match(/cron: '([^ ]+) /)[1].split(',').map(Number);assert.equal(minutes.length,4);assert.ok(minutes.every((minute,index)=>minute>=0&&minute<60&&(index===0||minute-minutes[index-1]===15)));assert.equal(value,workflow(bot,'b'.repeat(40)));assert.match(value,/permissions: \{\}/);assert.match(value,/if: github.repository == 'clunkyard\/house-specimen'/);assert.match(value,/git diff --cached --quiet/);
+});
