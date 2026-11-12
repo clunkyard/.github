@@ -57,7 +57,7 @@ async function fetchSource(row,options){
   if(!sameSource(before,after))throw Error(`House source changed during download: ${slug}`);
   return{bot:{...before,slug},snapshot};
 }
-const makefile='CLUNKYARD ?= npx @clunkyard/cli\n\n.PHONY: all setup doctor match replay clean\nall:\n\t$(CLUNKYARD) build\nsetup:\n\t$(CLUNKYARD) setup\ndoctor:\n\t$(CLUNKYARD) doctor\nmatch:\n\t$(CLUNKYARD) match\nreplay:\n\t$(CLUNKYARD) replay\nclean:\n\t$(CLUNKYARD) clean\n';
+const makefile='CLUNKYARD ?= npx --yes @clunkyard/cli\n\n.PHONY: all setup doctor match replay clean\nall:\n\t$(CLUNKYARD) build\nsetup:\n\t$(CLUNKYARD) setup\ndoctor:\n\t$(CLUNKYARD) doctor\nmatch:\n\t$(CLUNKYARD) match\nreplay:\n\t$(CLUNKYARD) replay\nclean:\n\t$(CLUNKYARD) clean\n';
 const license=`MIT License
 
 Copyright (c) 2026 Clunkyard contributors
