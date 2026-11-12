@@ -28,8 +28,8 @@ packages from npm:
 | Package | Use it for |
 | --- | --- |
 | [@clunkyard/cli](https://www.npmjs.com/package/@clunkyard/cli) | Create projects, build robots, connect remote code and play real local matches with your installed toolchain |
-| [@clunkyard/sdk 2.0.1](https://www.npmjs.com/package/@clunkyard/sdk/v/2.0.1) | JavaScript and TypeScript robots, with the shared WebAssembly core |
-| [@clunkyard/git 2.0.2](https://www.npmjs.com/package/@clunkyard/git/v/2.0.2) | Clone and push your private Clunkyard project with Git |
+| [@clunkyard/sdk](https://www.npmjs.com/package/@clunkyard/sdk) | JavaScript and TypeScript robots, with the shared WebAssembly core |
+| [@clunkyard/git](https://www.npmjs.com/package/@clunkyard/git) | Clone and push your private Clunkyard project with Git |
 
 Create a Vane robot and play a local match with Node 20+ and npm:
 
