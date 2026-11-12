@@ -120,17 +120,15 @@ Use this template to create your own GitHub repository, then connect it in
 Run local trials before hosted practice and tournament entry.
 Builds execute source as your user, so review changes you pull.
 
-This official template follows the published House robot. Its scheduled sync is
-restricted to \`clunkyard/house-${bot.slug}\`; it never runs in a player's copy.
+This official template follows the published House robot. Clunkyard manages its
+automatic sync in \`clunkyard/house-${bot.slug}\`; it never runs in a player's copy.
 \`.clunkyard-source.json\` records the source bot, revision and original manifest.
 Robot source bytes are preserved; \`bot.json\` uses the CLI's canonical language slug.
 Tooling, this guide and the MIT licence are template additions.
 `;
 }
-function workflow(bot){const offset=parseInt(sha(bot.slug).slice(0,2),16)%15;return `name: Refresh published House source
+function workflow(bot){return `name: Refresh published House source
 on:
-  schedule:
-    - cron: '${[0,15,30,45].map(minute=>minute+offset).join(',')} * * * *'
   workflow_dispatch:
 permissions: {}
 concurrency:
