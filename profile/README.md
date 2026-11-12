@@ -27,17 +27,17 @@ packages from npm:
 
 | Package | Use it for |
 | --- | --- |
-| [@clunkyard/cli 2.0.0](https://www.npmjs.com/package/@clunkyard/cli/v/2.0.0) | Create projects, build robots and play real local matches with your installed toolchain |
-| [@clunkyard/sdk 2.0.0](https://www.npmjs.com/package/@clunkyard/sdk/v/2.0.0) | JavaScript and TypeScript robots, with the shared WebAssembly core |
-| [@clunkyard/git 2.0.1](https://www.npmjs.com/package/@clunkyard/git/v/2.0.1) | Clone and push your private Clunkyard project with Git |
+| [@clunkyard/cli](https://www.npmjs.com/package/@clunkyard/cli) | Create projects, build robots, connect remote code and play real local matches with your installed toolchain |
+| [@clunkyard/sdk 2.0.1](https://www.npmjs.com/package/@clunkyard/sdk/v/2.0.1) | JavaScript and TypeScript robots, with the shared WebAssembly core |
+| [@clunkyard/git 2.0.2](https://www.npmjs.com/package/@clunkyard/git/v/2.0.2) | Clone and push your private Clunkyard project with Git |
 
 Create a Vane robot and play a local match with Node 20+ and npm:
 
 ```sh
-npx --yes @clunkyard/cli@2 new vane my-robot
+npx @clunkyard/cli new vane my-robot
 cd my-robot
-npx --yes @clunkyard/cli@2 build
-npx --yes @clunkyard/cli@2 match
+npx @clunkyard/cli build
+npx @clunkyard/cli match
 ```
 
 The [local development guide](https://clunkyard.com/sdk/player-kit) covers other
